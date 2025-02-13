@@ -3,7 +3,7 @@ from config import API_KEY
 
 # Configure the generative model
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-2-pro')
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 def generate_content(full_prompt):
     try:
