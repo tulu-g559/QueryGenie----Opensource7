@@ -5,6 +5,16 @@ from genai_client import generate_content
 from utils import structure_message
 from weather import get_weather
 
+from PIL import Image
+import pytesseract
+import requests
+from io import BytesIO
+
+import cv2
+import numpy as np
+
+
+
 # Initialize chat histories with a limit to prevent memory bloat
 CHAT_HISTORY_LIMIT = 10
 chat_histories = {}
@@ -51,6 +61,48 @@ async def weather(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     except Exception as e:
         logger.error(f"Error fetching weather for {city}: {str(e)}")
         await update.message.reply_text("Sorry, I couldn't fetch the weather. Please try again later.")
+
+
+
+
+
+
+from telegram import Update
+from telegram.ext import ContextTypes
+from config import GEMINI_API_KEY
+import google.generativeai as genai
+from PIL import Image
+import requests
+from io import BytesIO
+import base64
+
+# Configure Gemini API
+genai.configure(api_key=GEMINI_API_KEY)
+
+async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handles image input, sends it to Gemini AI for analysis, and returns a response."""
+    
+    photo = update.message.photo[-1]  # Get the highest resolution image
+    photo_file = await photo.get_file()
+    photo_bytes = requests.get(photo_file.file_path).content
+
+    # Convert image to base64
+    image_base64 = base64.b64encode(photo_bytes).decode("utf-8")
+
+    # Generate response using Gemini AI
+    try:
+        model = genai.GenerativeModel("gemini-pro-vision")  # Gemini Vision model
+        response = model.generate_content([{"mime_type": "image/jpeg", "data": image_base64}, 
+                                           "Analyze the image and provide a detailed description, including objects, text, and context."])
+        
+        reply_text = response.text if response.text else "I couldn't analyze the image."
+    except Exception as e:
+        reply_text = f"Error analyzing image: {str(e)}"
+    
+    await update.message.reply_text(reply_text)
+
+
+
 
 async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle the chatbot conversation."""
