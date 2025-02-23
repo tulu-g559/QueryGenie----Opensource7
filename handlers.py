@@ -4,7 +4,7 @@ from config import logger
 from genai_client import generate_content
 from utils import structure_message
 from weather import get_weather
-
+import logging
 import requests
 import base64
 import google.generativeai as genai
@@ -94,6 +94,8 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         logger.error(f"Error generating response for user ({user_id}): {str(e)}")
         await update.message.reply_text("Oops! Something went wrong. Please try again later.")
 
+
+
 async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Processes an image message, analyzes it using Gemini Vision, and returns a response."""
 
@@ -104,14 +106,17 @@ async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Convert image to base64 for Gemini API
     image_base64 = base64.b64encode(photo_bytes).decode("utf-8")
 
-    prompt = "Analyze the image and provide a meaningful description."
+    # Get user-provided prompt (if any)
+    user_prompt = update.message.caption  # Captions in Telegram are used for images
+    prompt = user_prompt if user_prompt else "Analyze the image and provide a meaningful description."
 
     try:
-        model = genai.GenerativeModel("gemini-pro-vision")
+        model = genai.GenerativeModel("gemini-2-pro")  # Using Gemini 2 Pro
         response = model.generate_content([{"mime_type": "image/jpeg", "data": image_base64}, prompt])
         
-        reply_text = response.text if response.text else "Sorry, I couldn't analyze the image."
+        reply_text = response.text if response.text else "I couldn't analyze the image properly. Try again with a different image."
     except Exception as e:
-        reply_text = f"Error analyzing image: {str(e)}"
-    
+        logging.error(f"Error analyzing image: {str(e)}")  # Log the actual error
+        reply_text = "There was an issue processing your image. Please try again later."
+
     await update.message.reply_text(reply_text)
