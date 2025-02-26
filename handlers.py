@@ -1,9 +1,10 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 from config import logger
-from genai_client import generate_content
+from genai_client import generate_content, analyze_image
 from utils import structure_message
 from weather import get_weather
+import requests
 
 # Initialize chat histories with a limit to prevent memory bloat
 CHAT_HISTORY_LIMIT = 10
@@ -88,3 +89,18 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     except Exception as e:
         logger.error(f"Error generating response for user ({user_id}): {str(e)}")
         await update.message.reply_text("Oops! Something went wrong. Please try again later.")
+
+async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Processes an image message, analyzes it using Gemini AI, and returns a response."""
+    
+    photo = update.message.photo[-1]  # Get the highest-resolution image
+    photo_file = await photo.get_file()
+    photo_bytes = requests.get(photo_file.file_path).content
+
+    # Get user-provided prompt (if any)
+    user_prompt = update.message.caption  # Captions in Telegram are used for images
+
+    # Call genai_client for processing
+    response_text = analyze_image(photo_bytes, user_prompt)
+
+    await update.message.reply_text(response_text)
