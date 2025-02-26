@@ -97,26 +97,16 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Processes an image message, analyzes it using Gemini Vision, and returns a response."""
-
+    """Processes an image message, analyzes it using Gemini AI, and returns a response."""
+    
     photo = update.message.photo[-1]  # Get the highest-resolution image
     photo_file = await photo.get_file()
     photo_bytes = requests.get(photo_file.file_path).content
 
-    # Convert image to base64 for Gemini API
-    image_base64 = base64.b64encode(photo_bytes).decode("utf-8")
-
     # Get user-provided prompt (if any)
     user_prompt = update.message.caption  # Captions in Telegram are used for images
-    prompt = user_prompt if user_prompt else "Analyze the image and provide a meaningful description."
 
-    try:
-        model = genai.GenerativeModel("gemini-1.5-flash")  # Using Gemini 1.5 Flash
-        response = model.generate_content([{"mime_type": "image/jpeg", "data": image_base64}, prompt])
-        
-        reply_text = response.text if response.text else "I couldn't analyze the image properly. Try again with a different image."
-    except Exception as e:
-        logging.error(f"Error analyzing image: {str(e)}")  # Log the actual error
-        reply_text = "There was an issue processing your image. Please try again later."
+    # Call genai_client for processing
+    response_text = analyze_image(photo_bytes, user_prompt)
 
-    await update.message.reply_text(reply_text)
+    await update.message.reply_text(response_text)
