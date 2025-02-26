@@ -111,7 +111,7 @@ async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     prompt = user_prompt if user_prompt else "Analyze the image and provide a meaningful description."
 
     try:
-        model = genai.GenerativeModel("gemini-2-pro")  # Using Gemini 2 Pro
+        model = genai.GenerativeModel("gemini-1.5-flash")  # Using Gemini 2 Pro
         response = model.generate_content([{"mime_type": "image/jpeg", "data": image_base64}, prompt])
         
         reply_text = response.text if response.text else "I couldn't analyze the image properly. Try again with a different image."
