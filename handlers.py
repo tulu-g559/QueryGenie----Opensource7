@@ -1,15 +1,17 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 from config import logger
-from genai_client import generate_content
+from genai_client import generate_content, analyze_image
 from utils import structure_message
 from weather import get_weather
-import logging
 import requests
+<<<<<<< HEAD
 import base64
 import google.generativeai as genai
 from config import API_KEY
 from telegram.constants import ParseMode
+=======
+>>>>>>> origin/main
 
 # Initialize chat histories with a limit to prevent memory bloat
 CHAT_HISTORY_LIMIT = 10
@@ -95,12 +97,15 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         logger.error(f"Error generating response for user ({user_id}): {str(e)}")
         await update.message.reply_text("Oops! Something went wrong. Please try again later.")
 
+<<<<<<< HEAD
         formatted_response = escape_markdown_v2(response_text)
 
         await update.message.reply_text(formatted_response, parse_mode=ParseMode.MARKDOWN_V2)
 
 
 
+=======
+>>>>>>> origin/main
 async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Processes an image message, analyzes it using Gemini AI, and returns a response."""
     
