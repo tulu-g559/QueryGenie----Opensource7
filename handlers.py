@@ -9,6 +9,7 @@ import requests
 import base64
 import google.generativeai as genai
 from config import API_KEY
+from telegram.constants import ParseMode
 
 # Initialize chat histories with a limit to prevent memory bloat
 CHAT_HISTORY_LIMIT = 10
@@ -93,6 +94,10 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     except Exception as e:
         logger.error(f"Error generating response for user ({user_id}): {str(e)}")
         await update.message.reply_text("Oops! Something went wrong. Please try again later.")
+
+        formatted_response = escape_markdown_v2(response_text)
+
+        await update.message.reply_text(formatted_response, parse_mode=ParseMode.MARKDOWN_V2)
 
 
 
